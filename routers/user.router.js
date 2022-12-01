@@ -1,5 +1,6 @@
 const express = require('express')
 const userController = require('../controllers/user.controller')
+
 const userRouter = express.Router()
 
 userRouter.get('/:id([0-9]+)', userController.getOne)
