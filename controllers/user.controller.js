@@ -1,3 +1,4 @@
+const database = require('../context/database')
 const fakeDb = require('../context/fakeDb')
 
 const users = fakeDb.users
@@ -5,34 +6,37 @@ const users = fakeDb.users
 const userController = {
 
     getOne : (req, res) => {
-        const user = users.find(u => u.id == req.params.id)
-        if (user) {
-            res.status(200).json(user)
-        }
-        else
-        {
-            res.sendStatus(400)
-        }
+        database.getOne(req.params.id, (user) => {
+            console.log(user);
+            if (user) {
+                res.status(200).json(user)
+            }
+            else
+            {
+                res.sendStatus(400)
+            }
+        })
+        
     },
 
     getAll : (req, res) => {
-        res.status(200).json(users)
+        database.getAll((data) => {
+            res.status(200).json(data)
+        })
     },
 
     create : (req, res) => {
         const user = req.body
         if (user.nom && user.prenom && user.email && user.password) {
-            users.push(
-                {
-                    id : compteur,
-                    nom : user.nom,
-                    prenom : user.prenom,
-                    email : user.email,
-                    password : user.password
+
+            database.create(user.prenom, user.nom, user.email, user.password, (result) => {
+                if (result) {
+                    res.sendStatus(200)
                 }
-            )
-            compteur++
-            res.status(200).json(users)
+                else{
+                    res.sendStatus(400)
+                }
+            })  
         }
         else{
             res.sendStatus(400)
@@ -43,21 +47,15 @@ const userController = {
     update : (req, res) => {
         const user = req.body
         if (user.id && user.nom && user.prenom && user.email && user.password){
-            const originalUser = users.find(u => u.id == user.id)
-            if (originalUser) {
-                users.splice(users.indexOf(originalUser), 1, 
-                {
-                    id : user.id,
-                    nom : user.nom,
-                    prenom : user.prenom,
-                    email : user.email,
-                    password : user.password
-                })
-                res.status(200).json(users)
-            }
-            else{
-                res.sendStatus(400) 
-            }
+
+            database.update(user.id, user.prenom, user.nom, user.email, user.password, (result) => {
+                if (result) {
+                    res.sendStatus(200)
+                }
+                else{
+                    res.sendStatus(400)
+                }
+            })   
         }
         else
         {
@@ -66,15 +64,10 @@ const userController = {
     },
     
     delete : (req, res) => {
-        const user = users.find(u => u.id == req.params.id)
-        if (user) {
-            const index = users.indexOf(user)
-            users.splice(index,1)
-            res.status(200).json(users)
-        }
-        else{
-            res.sendStatus(400)
-        }
+        database.delete(req.params.id, (result) => {
+            res.sendStatus(result ? 200 : 400)
+        })
+        
     },
 
     changePassword : (req, res) => {
